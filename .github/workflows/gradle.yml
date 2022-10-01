@@ -36,3 +36,23 @@ jobs:
       - name: Show Current Time
         run: echo "CurrentTime=$"
         shell: bash
+
+      - name: Generate deployment package
+        run: |
+          mkdir -p deploy
+          cp build/libs/*.jar deploy/application.jar
+          cp Procfile deploy/Procfile
+          cp -r .ebextensions deploy/.ebextensions
+          cp -r .platform deploy/.platform
+          cd deploy && zip -r deploy.zip .
+
+      - name: Beanstalk Deploy
+        uses: einaregilsson/beanstalk-deploy@v20
+        with:
+          aws_access_key: $
+          aws_secret_key: $
+          application_name: bean-stalk
+          environment_name: Beanstalk-env
+          version_label: github-action-$
+          region: ap-northeast-2
+          deployment_package: deploy/deploy.zip
